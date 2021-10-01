@@ -4,7 +4,7 @@
 
 Soi plays music on your hard drive and not much more.
 
-![Screenshot of soi](screenshot.png)
+![Screenshot](https://user-images.githubusercontent.com/83108905/135654736-1bc540d5-f7d1-4fb6-bc1b-874f243a1d00.png)
 
 ## Features
 
