@@ -14,15 +14,6 @@ use std::thread::sleep;
 use std::time::Duration;
 use traits::{ArgFiles, UnwrappedMutex};
 
-// TODO
-// 0.1 All FIXMEs gone.
-//     All TODOs gone or moved to mama.
-//     No unwraps.
-//     cargo doc --open is pretty.
-//
-//     README.md with what? why? Screenshot
-//     Check for new versions before releasing  -- 28/9
-
 fn main() -> anyhow::Result<()> {
     handle_cmd_line_flags();
 
