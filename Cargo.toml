@@ -1,0 +1,23 @@
+[package]
+name = "soi"
+version = "0.1.0"
+authors = ["Teemu Tervo <teemu.tervo iki.fi>"]
+description = "A command line music player for the pre-streaming era"
+keywords = ["cli", "audio", "music", "player"]
+categories = ["command-line-utilities", "multimedia"]
+readme = "README.md"
+license-file = "COPYING"
+repository = "https://github.com/teervo/soi/"
+edition = "2018"
+
+[dependencies]
+glib = { version = "0.14.5", features = ["v2_66"] }
+gst = { package = "gstreamer", version = "0.17.4" }
+gst-audio = { package = "gstreamer-audio", version = "0.17.2" }
+
+anyhow = "1.0.44"
+itertools = "0.10.1"
+termion = "1.5.6"
+
+[dev-dependencies]
+rand = "0.8.4"
