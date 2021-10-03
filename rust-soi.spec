@@ -34,7 +34,7 @@ Summary:        %{summary}
 %{_bindir}/soi
 
 %prep
-%autosetup -n %{crate}-%{version_no_tilde} -p1
+%autosetup -n %{crate} -p1
 %cargo_prep
 
 %generate_buildrequires
