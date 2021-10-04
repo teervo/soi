@@ -32,7 +32,7 @@ Summary:        %{summary}
 %doc README.md
 %{_bindir}/soi
 
-%prep
+%prep      -n %crate
 %autosetup -n %{crate}-%{version} -p1
 %cargo_prep
 
