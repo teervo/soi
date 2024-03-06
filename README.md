@@ -21,7 +21,7 @@ Soi plays music on your hard drive and not much more.
 - space: pause/continue playback
 - `m`: mute/unmute
 - `q`: quit program
-- '?': show these shortcuts
+- `?`: show these shortcuts
 
 ## Dependencies
 - GStreamer >= 1.8
