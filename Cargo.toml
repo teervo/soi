@@ -15,9 +15,10 @@ glib = { version = "0.14.5", features = ["v2_66"] }
 gst = { package = "gstreamer", version = "0.17.4" }
 gst-audio = { package = "gstreamer-audio", version = "0.17.2" }
 
-anyhow = "1.0.44"
+anyhow = "1.0.80"
+dbus = "0.9.7"
 itertools = "0.10.1"
-termion = "1.5.6"
+termion = "3.0.0"
 
 [dev-dependencies]
 rand = "0.8.4"

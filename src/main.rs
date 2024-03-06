@@ -8,6 +8,7 @@ mod song;
 mod traits;
 
 use backend::BackendMessage;
+use dbus::blocking::Connection;
 use input::{handle_user_input, UserInput};
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
@@ -25,7 +26,20 @@ fn main() -> anyhow::Result<()> {
     let playlist = Arc::new(Mutex::new(playlist::Playlist::from(
         &std::env::args().files()?,
     )));
-    let mut output = output::Output::new();
+    let output = Arc::new(Mutex::new(output::Output::new()));
+
+    // Quick and dirty: block GNOME from suspending during playback
+    let dbus = Connection::new_session()?;
+    let proxy = dbus.with_proxy(
+        "org.gnome.SessionManager",
+        "/org/gnome/SessionManager",
+        Duration::from_millis(5000),
+    );
+    let (_cookie,): (u32,) = proxy.method_call(
+        "org.gnome.SessionManager",
+        "Inhibit",
+        ("soi", 0u32, "Playing music", 4u32),
+    )?;
 
     // New thread for waiting for user input
     let (input_tx, input_rx) = glib::MainContext::channel(glib::source::Priority::default());
@@ -41,8 +55,9 @@ fn main() -> anyhow::Result<()> {
     // Send user input to backend
     input_rx.attach(
         None,
-        glib::clone!(@strong backend, @strong playlist, @strong mainloop => move |msg| {
+        glib::clone!(@strong backend, @strong playlist, @strong output => move |msg| {
             match msg {
+                UserInput::Help => output.lockk().toggle_help(),
                 UserInput::Mute => backend.toggle_mute(),
                 UserInput::Pause => backend.toggle_pause(),
                 UserInput::Stop => backend.stop(),
@@ -69,14 +84,14 @@ fn main() -> anyhow::Result<()> {
                     playlist.lockk().next();
                 }
                 BackendMessage::ReachedEndOfPlaylist => {
-                    output.cleanup();
+                    output.lockk().cleanup();
                     mainloop.quit();
                 }
                 BackendMessage::RequestNextSong => {
                     backend.enqueue(playlist.lockk().peek());
                 }
                 BackendMessage::State(state) => {
-                    output.refresh(state, &playlist.lockk())
+                  output.lockk().refresh(state, &playlist.lockk())
                         .ok(); // ignore any output errors
                 }
             };

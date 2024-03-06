@@ -17,6 +17,7 @@ use termion::raw::{IntoRawMode, RawTerminal};
 pub struct Output {
     stdout: RawTerminal<std::io::Stdout>,
     lines_printed: usize, // Number of lines printed on last refresh
+    display_help: bool,   // Whether help mode is on
 }
 
 impl Output {
@@ -25,6 +26,7 @@ impl Output {
         Self {
             stdout: stdout().into_raw_mode().expect("Unable to open stdout"),
             lines_printed: 0,
+            display_help: false,
         }
     }
 
@@ -32,6 +34,16 @@ impl Output {
     pub fn cleanup(&self) {
         println!();
         self.stdout.suspend_raw_mode().ok();
+    }
+
+    /// FIXME add comment
+    pub fn toggle_help(&mut self) -> Result<()> {
+        self.display_help = match self.display_help {
+            true => false,
+            false => true,
+        };
+
+        Ok(())
     }
 
     /// Refreshes the output printed to the user.
@@ -43,9 +55,15 @@ impl Output {
                 .write_all(format!("\x1b[{}A", self.lines_printed).as_ref())?;
         }
 
-        let output = Self::generate_output(state, playlist)?;
-        self.stdout.write_all(output.join("\n").as_ref())?;
-        // -1 because last line has no newline
+        let output = match self.display_help {
+            false => Self::generate_output(state, playlist)?,
+            true => Self::generate_help()?,
+        };
+
+        self.stdout.write_all(output.join("\r\n").as_ref())?;
+        self.stdout.write_all(b"\r")?;
+
+        // -1 because last line has no newline:
         self.lines_printed = output.len() - 1;
 
         self.stdout.flush()?;
@@ -75,7 +93,7 @@ impl Output {
             .group_by(|(_, song)| song.album_info.to_string())
         {
             ret.push(format!(
-                "{}{:>width$}{}\r",
+                "{}{:>width$}{}",
                 termion::style::Underline,
                 album,
                 termion::style::Reset,
@@ -106,6 +124,47 @@ impl Output {
         }
     }
 
+    /// FIXME
+    fn generate_help() -> Result<Vec<String>> {
+        let mut ret = Vec::new();
+        let (terminal_height, _terminal_width) = {
+            let (w, h) = termion::terminal_size()?;
+            (usize::try_from(h)?, usize::try_from(w)?)
+        };
+
+        let empty_line = termion::clear::AfterCursor.to_string();
+
+        ret.push(empty_line.clone());
+        ret.push(format!("Keyboard shortcuts{}", termion::clear::AfterCursor));
+        ret.push(empty_line.clone());
+
+        ret.push(format!(
+            " k or up arrow     previous song{}",
+            termion::clear::AfterCursor
+        ));
+
+        ret.push(format!(
+            " j or down arrow   next song{}",
+            termion::clear::AfterCursor
+        ));
+
+        ret.push(format!(
+            " h or left arrow   seek backwards{}",
+            termion::clear::AfterCursor
+        ));
+
+        ret.push(format!(
+            " l or right arrow  seek forward{}",
+            termion::clear::AfterCursor
+        ));
+
+        while ret.len() < terminal_height {
+            ret.push(empty_line.clone());
+        }
+
+        Ok(ret)
+    }
+
     /// Returns the line of output to be printed
     /// for the currently playing song.
     fn format_playing_song(song: &Song, state: &BackendState, terminal_width: usize) -> String {
@@ -118,7 +177,7 @@ impl Output {
         let time = format!("{}/{}", state.position.pretty(), song.duration.pretty());
 
         format!(
-            "{} {}{:>3} {:width$} {:>time_width$}{}\r",
+            "{} {}{:>3} {:width$} {:>time_width$}{}",
             color::Fg(color::LightWhite),
             icon,
             song.track_number,
@@ -135,7 +194,7 @@ impl Output {
     fn format_song(song: &Song, terminal_width: usize) -> String {
         let duration = song.duration.pretty();
         format!(
-            "{}{:>6} {:width$} {:>time_width$}{}\r",
+            "{}{:>6} {:width$} {:>time_width$}{}",
             color::Fg(color::White),
             song.track_number,
             song,

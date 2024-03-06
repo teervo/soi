@@ -5,6 +5,7 @@ use termion::input::TermRead;
 
 /// Valid user actions the main program needs to act on.
 pub enum UserInput {
+    Help,
     Mute,
     Pause,
     Stop,
@@ -17,6 +18,7 @@ pub enum UserInput {
 /// Interprets user key presses as `UserInput` variants.
 pub fn handle_user_input() -> Option<UserInput> {
     match read_key_press()? {
+        Key::Char('?') => Some(UserInput::Help),
         Key::Char('m') => Some(UserInput::Mute),
         Key::Char(' ') => Some(UserInput::Pause),
         Key::Char('q') => Some(UserInput::Stop),
