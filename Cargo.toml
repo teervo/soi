@@ -1,6 +1,6 @@
 [package]
 name = "soi"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Teemu Tervo <teemu.tervo iki.fi>"]
 description = "A command line music player for the pre-streaming era"
 keywords = ["cli", "audio", "music", "player"]
